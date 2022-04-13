@@ -5,7 +5,7 @@ output "private_key" {
   depends_on = [
     # Wait for binding and custom role creation
     # so Service Account will have proper permissions level
-    google_project_iam_binding.project,
+    google_project_iam_member.project,
     google_project_iam_custom_role.castai_role
   ]
 }
