@@ -23,7 +23,7 @@ resource "google_project_iam_custom_role" "castai_role" {
   stage       = "GA"
 }
 
-resource "google_project_iam_binding" "project" {
+resource "google_project_iam_member" "project" {
   for_each = toset([
     "roles/container.developer",
     "roles/iam.serviceAccountUser",
@@ -32,7 +32,7 @@ resource "google_project_iam_binding" "project" {
 
   project = var.project_id
   role    = each.key
-  members = ["serviceAccount:${local.service_account_email}"]
+  member = "serviceAccount:${local.service_account_email}"
 }
 
 resource "google_service_account_key" "castai_key" {
