@@ -27,6 +27,9 @@ module "castai_gke_iam" {
 }
 ```
 
+# Examples
+
+Usage examples are located in [terraform provider repo](https://github.com/castai/terraform-provider-castai/tree/master/examples/gke)
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
