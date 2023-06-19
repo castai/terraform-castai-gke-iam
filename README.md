@@ -70,7 +70,9 @@ No modules.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_private_key"></a> [private\_key](#output\_private\_key) | n/a |
+| Name                                                                                             | Description                                          |
+|--------------------------------------------------------------------------------------------------|------------------------------------------------------|
+| <a name="output_private_key"></a> [private\_key](#output\_private\_key)                          | Contains a CAST AI token (sensitive data)            |
+| <a name="service_account_id"></a> [service\_account\_id](#output\_service\_account\_id)          | Contains service account ID created by the module    |
+| <a name="service_account_email"></a> [service\_account\_email](#output\_service\_account\_email) | Contains service account email created by the module |
 <!-- END_TF_DOCS -->
