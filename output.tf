@@ -9,3 +9,11 @@ output "private_key" {
     google_project_iam_custom_role.castai_role
   ]
 }
+
+output "service_account_id" {
+  value = google_service_account.castai_service_account.account_id
+}
+
+output "service_account_email" {
+  value = google_service_account.castai_service_account.email
+}
