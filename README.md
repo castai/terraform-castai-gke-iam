@@ -55,24 +55,27 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [google_project_iam_binding.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_binding) | resource |
 | [google_project_iam_custom_role.castai_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
+| [google_project_iam_member.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
+| [google_project_iam_member.service_account_user](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_service_account.castai_service_account](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account) | resource |
 | [google_service_account_key.castai_key](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_key) | resource |
 | [castai_gke_user_policies.gke](https://registry.terraform.io/providers/castai/castai/latest/docs/data-sources/gke_user_policies) | data source |
+| [google_project.project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_gke_cluster_name"></a> [gke\_cluster\_name](#input\_gke\_cluster\_name) | GKE cluster name for which create IAM roles | `string` | n/a | yes |
+| <a name="input_gke_cluster_name"></a> [gke\_cluster\_name](#input\_gke\_cluster\_name) | GKE cluster name for which to create IAM roles | `string` | n/a | yes |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The project id from GCP | `string` | n/a | yes |
+| <a name="input_service_accounts_unique_ids"></a> [service\_accounts\_unique\_ids](#input\_service\_accounts\_unique\_ids) | Service Accounts' unique IDs used by node pools in the cluster | `list(string)` | n/a | yes |
 
 ## Outputs
 
-| Name                                                                                             | Description                                          |
-|--------------------------------------------------------------------------------------------------|------------------------------------------------------|
-| <a name="output_private_key"></a> [private\_key](#output\_private\_key)                          | Contains a CAST AI token (sensitive data)            |
-| <a name="service_account_id"></a> [service\_account\_id](#output\_service\_account\_id)          | Contains service account ID created by the module    |
-| <a name="service_account_email"></a> [service\_account\_email](#output\_service\_account\_email) | Contains service account email created by the module |
+| Name | Description |
+|------|-------------|
+| <a name="output_private_key"></a> [private\_key](#output\_private\_key) | n/a |
+| <a name="output_service_account_email"></a> [service\_account\_email](#output\_service\_account\_email) | n/a |
+| <a name="output_service_account_id"></a> [service\_account\_id](#output\_service\_account\_id) | n/a |
 <!-- END_TF_DOCS -->
