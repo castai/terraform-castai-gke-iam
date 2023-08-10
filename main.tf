@@ -39,7 +39,8 @@ resource "google_project_iam_member" "project" {
   member  = "serviceAccount:${local.service_account_email}"
 }
 
-resource "google_project_iam_member" "service_account_user" {
+resource "google_project_iam_member" "scoped_service_account_user" {
+  count   = length(var.service_accounts_unique_ids) > 0 ? 1 : 0
   project = var.project_id
 
   role   = "roles/iam.serviceAccountUser"
@@ -50,6 +51,14 @@ resource "google_project_iam_member" "service_account_user" {
     description = "IAM condition with limited scope"
     expression  = local.condition_expression
   }
+}
+
+resource "google_project_iam_member" "default_service_account_user" {
+  count   = length(var.service_accounts_unique_ids) == 0 ? 1 : 0
+  project = var.project_id
+
+  role   = "roles/iam.serviceAccountUser"
+  member = "serviceAccount:${local.service_account_email}"
 }
 
 resource "google_service_account_key" "castai_key" {

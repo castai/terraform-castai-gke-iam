@@ -12,4 +12,5 @@ variable "gke_cluster_name" {
 variable "service_accounts_unique_ids" {
   type        = list(string)
   description = "Service Accounts' unique IDs used by node pools in the cluster"
+  default     = []
 }
