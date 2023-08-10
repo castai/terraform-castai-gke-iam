@@ -4,7 +4,12 @@ variable "project_id" {
 }
 
 variable "gke_cluster_name" {
-  type = string
+  type        = string
   description = "GKE cluster name for which to create IAM roles"
 }
 
+variable "service_accounts_unique_ids" {
+  type        = list(string)
+  description = "Service Accounts' unique IDs used by node pools in the cluster"
+  default     = []
+}
