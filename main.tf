@@ -5,6 +5,8 @@ locals {
   service_account_email = "${local.service_account_id}@${var.project_id}.iam.gserviceaccount.com"
   custom_role_id        = "castai.gkeAccess.${substr(sha1(var.gke_cluster_name), 0, 8)}.tf"
   condition_expression  = join("||", formatlist("resource.name.startsWith(\"projects/-/serviceAccounts/%s\")", var.service_accounts_unique_ids))
+  default_permissions   = ["roles/container.developer", "roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
+  scoped_permissions    = ["roles/container.developer", "projects/${var.project_id}/roles/${local.custom_role_id}"]
 }
 
 resource "google_service_account" "castai_service_account" {
@@ -29,11 +31,23 @@ resource "google_project_iam_custom_role" "castai_role" {
 }
 
 resource "google_project_iam_member" "project" {
-  for_each = toset([
-    "roles/container.developer",
-    "projects/${var.project_id}/roles/${local.custom_role_id}"
-  ])
+  for_each = (
+    length(var.service_accounts_unique_ids) == 0 ?
+    { for permission in local.default_permissions : permission => permission } :
+    {}
+  )
 
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${local.service_account_email}"
+}
+
+resource "google_project_iam_member" "scoped_project" {
+  for_each = (
+    length(var.service_accounts_unique_ids) > 0 ?
+    { for permission in local.scoped_permissions : permission => permission } :
+    {}
+  )
   project = var.project_id
   role    = each.key
   member  = "serviceAccount:${local.service_account_email}"
@@ -51,14 +65,6 @@ resource "google_project_iam_member" "scoped_service_account_user" {
     description = "IAM condition with limited scope"
     expression  = local.condition_expression
   }
-}
-
-resource "google_project_iam_member" "default_service_account_user" {
-  count   = length(var.service_accounts_unique_ids) == 0 ? 1 : 0
-  project = var.project_id
-
-  role   = "roles/iam.serviceAccountUser"
-  member = "serviceAccount:${local.service_account_email}"
 }
 
 resource "google_service_account_key" "castai_key" {
