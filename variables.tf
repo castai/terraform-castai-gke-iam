@@ -13,3 +13,8 @@ variable "service_accounts_unique_ids" {
   description = "Service Accounts' unique IDs used by node pools in the cluster"
   default     = []
 }
+
+variable "compute_resource_manager_project_id" {
+  type        = string
+  description = "st project id"
+}
