@@ -14,7 +14,7 @@ variable "service_accounts_unique_ids" {
   default     = []
 }
 
-variable "compute_resource_manager_project_id" {
-  type        = string
+variable "compute_manager_project_ids" {
+  type        = list(string)
   description = "st project id"
 }

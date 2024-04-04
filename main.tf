@@ -8,23 +8,7 @@ locals {
   default_permissions   = ["roles/container.developer", "roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
   scoped_permissions    = ["roles/container.developer", "projects/${var.project_id}/roles/${local.custom_role_id}"]
 
-  compute_resource_manager_project_id     = var.compute_resource_manager_project_id
-  compute_resource_manager_custom_role_id = local.compute_resource_manager_project_id != "" ? "castai.gkeAccess.${substr(sha1(local.compute_resource_manager_project_id), 0, 8)}.tf" : ""
-
-  compute_resource_manager_permissions = [
-    "compute.instances.get",
-    "compute.instances.list",
-    "compute.instances.create",
-    "compute.instances.start",
-    "compute.instances.stop",
-    "compute.instances.delete",
-    "compute.instances.setLabels",
-    "compute.instances.setServiceAccount",
-    "compute.instances.setMetadata",
-    "compute.instances.setTags",
-    "compute.disks.create",
-    "compute.disks.setLabels"
-  ]
+  compute_manager_project_ids = var.compute_manager_project_ids
 }
 
 resource "google_service_account" "castai_service_account" {
@@ -85,24 +69,24 @@ resource "google_project_iam_member" "scoped_service_account_user" {
   }
 }
 
-resource "google_project_iam_custom_role" "compute_resource_manager_role" {
-  count = local.compute_resource_manager_project_id != "" ? 1 : 0
+resource "google_project_iam_custom_role" "compute_manager_role" {
+  for_each = toset(local.compute_manager_project_ids)
 
-  project = local.compute_resource_manager_project_id
+  project = each.key
 
-  role_id     = local.compute_resource_manager_custom_role_id
+  role_id     = "castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
   title       = "Role to manage GKE compute resources via CAST AI"
   description = "Role to manage GKE compute resources via CAST AI"
-  permissions = local.compute_resource_manager_permissions
+  permissions = toset(data.castai_gke_user_policies.gke.policy)
   stage       = "GA"
 }
 
-resource "google_project_iam_member" "compute_resource_manager" {
-  count = var.compute_resource_manager_project_id != "" ? 1 : 0
+resource "google_project_iam_binding" "compute_manager_binding" {
+  for_each = toset(local.compute_manager_project_ids)
 
-  project = local.compute_resource_manager_project_id
-  role    = "projects/${var.compute_resource_manager_project_id}/roles/${local.compute_resource_manager_custom_role_id}"
-  member  = "serviceAccount:${local.service_account_email}"
+  project = each.key
+  role    = "projects/${each.key}/roles/castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
+  members = ["serviceAccount:${local.service_account_email}"]
 }
 
 resource "google_service_account_key" "castai_key" {
