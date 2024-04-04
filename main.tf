@@ -7,6 +7,8 @@ locals {
   condition_expression  = join("||", formatlist("resource.name.startsWith(\"projects/-/serviceAccounts/%s\")", var.service_accounts_unique_ids))
   default_permissions   = ["roles/container.developer", "roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
   scoped_permissions    = ["roles/container.developer", "projects/${var.project_id}/roles/${local.custom_role_id}"]
+
+  compute_manager_project_ids = var.compute_manager_project_ids
 }
 
 resource "google_service_account" "castai_service_account" {
@@ -65,6 +67,26 @@ resource "google_project_iam_member" "scoped_service_account_user" {
     description = "IAM condition with limited scope"
     expression  = local.condition_expression
   }
+}
+
+resource "google_project_iam_custom_role" "compute_manager_role" {
+  for_each = toset(local.compute_manager_project_ids)
+
+  project = each.key
+
+  role_id     = "castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
+  title       = "Role to manage GKE compute resources via CAST AI"
+  description = "Role to manage GKE compute resources via CAST AI"
+  permissions = toset(data.castai_gke_user_policies.gke.policy)
+  stage       = "GA"
+}
+
+resource "google_project_iam_binding" "compute_manager_binding" {
+  for_each = toset(local.compute_manager_project_ids)
+
+  project = each.key
+  role    = "projects/${each.key}/roles/castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
+  members = ["serviceAccount:${local.service_account_email}"]
 }
 
 resource "google_service_account_key" "castai_key" {

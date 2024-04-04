@@ -13,3 +13,9 @@ variable "service_accounts_unique_ids" {
   description = "Service Accounts' unique IDs used by node pools in the cluster"
   default     = []
 }
+
+variable "compute_manager_project_ids" {
+  type        = list(string)
+  description = "Projects list for shared sole tenancy nodes"
+  default     = []
+}
