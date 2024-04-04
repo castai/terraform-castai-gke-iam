@@ -17,4 +17,5 @@ variable "service_accounts_unique_ids" {
 variable "compute_manager_project_ids" {
   type        = list(string)
   description = "Projects list for shared sole tenancy nodes"
+  default     = []
 }
