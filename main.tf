@@ -5,8 +5,8 @@ locals {
   service_account_email = "${local.service_account_id}@${var.project_id}.iam.gserviceaccount.com"
   custom_role_id        = "castai.gkeAccess.${substr(sha1(var.gke_cluster_name), 0, 8)}.tf"
   condition_expression  = join("||", formatlist("resource.name.startsWith(\"projects/-/serviceAccounts/%s\")", var.service_accounts_unique_ids))
-  default_permissions   = ["roles/container.developer", "roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
-  scoped_permissions    = ["roles/container.developer", "projects/${var.project_id}/roles/${local.custom_role_id}"]
+  default_permissions   = ["roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
+  scoped_permissions    = ["projects/${var.project_id}/roles/${local.custom_role_id}"]
 
   compute_manager_project_ids = var.compute_manager_project_ids
 }
