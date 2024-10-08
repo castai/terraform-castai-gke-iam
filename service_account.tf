@@ -1,3 +1,13 @@
+moved {
+  from = google_service_account.castai_service_account
+  to = google_service_account.castai_service_account[0]
+}
+
+moved {
+  from = google_service_account_key.castai_key
+  to = google_service_account_key.castai_key[0]
+}
+
 locals {
   service_account_id    = "castai-gke-tf-${substr(sha1(var.gke_cluster_name), 0, 8)}"
   service_account_email = "${local.service_account_id}@${var.project_id}.iam.gserviceaccount.com"
