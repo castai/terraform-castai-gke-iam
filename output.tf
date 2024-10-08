@@ -1,5 +1,5 @@
 output "private_key" {
-  value     = base64decode(google_service_account_key.castai_key.private_key)
+  value     = var.create_service_account ? base64decode(google_service_account_key.castai_key[0].private_key) : ""
   sensitive = true
 
   depends_on = [
@@ -12,9 +12,10 @@ output "private_key" {
 }
 
 output "service_account_id" {
-  value = google_service_account.castai_service_account.account_id
+  value = var.create_service_account ? google_service_account.castai_service_account[0].account_id : ""
 }
 
 output "service_account_email" {
-  value = google_service_account.castai_service_account.email
+  value = var.create_service_account ? google_service_account.castai_service_account[0].email : ""
 }
+

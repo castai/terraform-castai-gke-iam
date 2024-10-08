@@ -19,3 +19,34 @@ variable "compute_manager_project_ids" {
   description = "Projects list for shared sole tenancy nodes"
   default     = []
 }
+
+variable "create_service_account" {
+  type        = bool
+  description = "Whether an Service Account with private key should be created"
+  default     = true
+}
+
+variable "setup_cloud_proxy_workload_identity" {
+  type        = bool
+  description = "Whether the workload identity for castai-cloud-proxy should be setup"
+  default     = false
+}
+
+variable "workload_identity_namespace" {
+  type        = string
+  description = "Override workload identity namespaces"
+  default     = ""
+}
+
+variable "cloud_proxy_service_account_namespace" {
+  type        = string
+  description = "Namespace of the cloud-proxy Kubernetes Service Account"
+  default     = "castai-agent"
+}
+
+
+variable "cloud_proxy_service_account_name" {
+  type        = string
+  description = "Name of the cloud-proxy Kubernetes Service Account"
+  default     = "castai-cloud-proxy"
+}
