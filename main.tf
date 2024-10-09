@@ -1,19 +1,15 @@
 ## IAM user required for CAST.AI
 
 locals {
-  custom_role_id        = "castai.gkeAccess.${substr(sha1(var.gke_cluster_name), 0, 8)}.tf"
-  condition_expression  = join("||", formatlist("resource.name.startsWith(\"projects/-/serviceAccounts/%s\")", var.service_accounts_unique_ids))
-  default_permissions   = ["roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
-  scoped_permissions    = ["projects/${var.project_id}/roles/${local.custom_role_id}"]
+  custom_role_id       = "castai.gkeAccess.${substr(sha1(var.gke_cluster_name), 0, 8)}.tf"
+  condition_expression = join("||", formatlist("resource.name.startsWith(\"projects/-/serviceAccounts/%s\")", var.service_accounts_unique_ids))
+  default_permissions  = ["roles/iam.serviceAccountUser", "projects/${var.project_id}/roles/${local.custom_role_id}"]
+  scoped_permissions   = ["projects/${var.project_id}/roles/${local.custom_role_id}"]
 
   compute_manager_project_ids = var.compute_manager_project_ids
 }
 
 data "castai_gke_user_policies" "gke" {}
-
-data "google_project" "project" {
-  project_id = var.project_id
-}
 
 resource "google_project_iam_custom_role" "castai_role" {
   role_id     = local.custom_role_id
