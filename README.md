@@ -80,7 +80,7 @@ No modules.
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The project id from GCP | `string` | n/a | yes |
 | <a name="input_service_accounts_unique_ids"></a> [service\_accounts\_unique\_ids](#input\_service\_accounts\_unique\_ids) | Service Accounts' unique IDs used by node pools in the cluster | `list(string)` | `[]` | no |
 | <a name="input_setup_cloud_proxy_workload_identity"></a> [setup\_cloud\_proxy\_workload\_identity](#input\_setup\_cloud\_proxy\_workload\_identity) | Whether the workload identity for castai-cloud-proxy should be setup | `bool` | `false` | no |
-| <a name="input_workload_identity_namespace"></a> [workload\_identity\_namespace](#input\_workload\_identity\_namespace) | Override workload identity namespaces | `string` | `""` | no |
+| <a name="input_workload_identity_namespace"></a> [workload\_identity\_namespace](#input\_workload\_identity\_namespace) | Override workload identity namespace, default is <project-id>.svc.id.goog | `string` | `""` | no |
 
 ## Outputs
 

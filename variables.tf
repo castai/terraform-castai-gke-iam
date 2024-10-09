@@ -34,7 +34,7 @@ variable "setup_cloud_proxy_workload_identity" {
 
 variable "workload_identity_namespace" {
   type        = string
-  description = "Override workload identity namespaces"
+  description = "Override workload identity namespace, default is <project-id>.svc.id.goog"
   default     = ""
 }
 
