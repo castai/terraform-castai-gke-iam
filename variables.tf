@@ -44,9 +44,20 @@ variable "cloud_proxy_service_account_namespace" {
   default     = "castai-agent"
 }
 
-
 variable "cloud_proxy_service_account_name" {
   type        = string
   description = "Name of the cloud-proxy Kubernetes Service Account"
   default     = "castai-cloud-proxy"
+}
+
+variable "castai_role_permissions" {
+  description = "A set of permissions that will be granted to CAST AI role used by central system"
+  type        = list(string)
+  default     = []
+}
+
+variable "compute_manager_permissions" {
+  description = "A set of permissions that will be granted to compute manager role"
+  type        = list(string)
+  default     = []
 }
