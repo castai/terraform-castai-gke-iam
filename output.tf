@@ -61,7 +61,8 @@ output "default_compute_manager_permissions" {
     "compute.targetPools.get",
     "compute.targetPools.addInstance",
     "compute.targetPools.removeInstance",
-    "compute.instances.use"]
+    "compute.instances.use",
+  ]
 }
 
 output "default_castai_role_permissions" {
@@ -106,5 +107,6 @@ output "default_castai_role_permissions" {
     "compute.targetPools.get",
     "compute.targetPools.addInstance",
     "compute.targetPools.removeInstance",
-    "compute.instances.use"]
+    "compute.instances.use",
+  ]
 }
