@@ -1,16 +1,17 @@
 moved {
   from = google_service_account.castai_service_account
-  to = google_service_account.castai_service_account[0]
+  to   = google_service_account.castai_service_account[0]
 }
 
 moved {
   from = google_service_account_key.castai_key
-  to = google_service_account_key.castai_key[0]
+  to   = google_service_account_key.castai_key[0]
 }
 
 locals {
-  service_account_id    = "castai-gke-tf-${substr(sha1(var.gke_cluster_name), 0, 8)}"
-  service_account_email = "${local.service_account_id}@${var.project_id}.iam.gserviceaccount.com"
+  service_account_id     = "castai-gke-tf-${substr(sha1(var.gke_cluster_name), 0, 8)}"
+  service_account_email  = "${local.service_account_id}@${var.project_id}.iam.gserviceaccount.com"
+  service_account_member = var.create_service_account ? google_service_account.castai_service_account[0].member : "serviceAccount:${local.service_account_email}"
 }
 
 resource "google_service_account" "castai_service_account" {
@@ -35,7 +36,7 @@ resource "google_project_iam_member" "project" {
 
   project = var.project_id
   role    = each.key
-  member  = "serviceAccount:${local.service_account_email}"
+  member  = google_service_account.castai_service_account[0].member
 }
 
 resource "google_project_iam_member" "scoped_project" {
@@ -46,7 +47,7 @@ resource "google_project_iam_member" "scoped_project" {
   )
   project = var.project_id
   role    = each.key
-  member  = "serviceAccount:${local.service_account_email}"
+  member  = google_service_account.castai_service_account[0].member
 }
 
 resource "google_project_iam_member" "scoped_service_account_user" {
@@ -54,7 +55,7 @@ resource "google_project_iam_member" "scoped_service_account_user" {
   project = var.project_id
 
   role   = "roles/iam.serviceAccountUser"
-  member = "serviceAccount:${local.service_account_email}"
+  member = google_service_account.castai_service_account[0].member
 
   condition {
     title       = "iam_condition"

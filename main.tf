@@ -37,5 +37,5 @@ resource "google_project_iam_binding" "compute_manager_binding" {
 
   project = each.key
   role    = "projects/${each.key}/roles/castai.gkeAccess.${substr(sha1(each.key), 0, 8)}.tf"
-  members = compact(["serviceAccount:${local.service_account_email}", var.setup_cloud_proxy_workload_identity ? local.workload_identity_sa : null])
+  members = compact([local.service_account_member, var.setup_cloud_proxy_workload_identity ? local.workload_identity_sa : null])
 }
