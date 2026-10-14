@@ -1,6 +1,6 @@
 data "castai_impersonation_service_account" "gke" {
-  count        = var.authentication_method == "impersonation" ? 1 : 0
-  cluster_type = "gke"
+  count         = var.authentication_method == "impersonation" ? 1 : 0
+  provider_type = "gke"
 }
 
 resource "google_service_account_iam_member" "castai_token_creator" {
