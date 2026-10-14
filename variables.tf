@@ -22,7 +22,7 @@ variable "compute_manager_project_ids" {
 
 variable "create_service_account" {
   type        = bool
-  description = "Whether an Service Account with private key should be created"
+  description = "Whether a Service Account with private key should be created. When false, an existing service account named castai-gke-tf-<sha1 of gke_cluster_name>@<project_id>.iam.gserviceaccount.com is expected, and IAM bindings (including the impersonation token creator role) are applied to it"
   default     = true
 }
 
@@ -60,4 +60,15 @@ variable "compute_manager_permissions" {
   description = "A set of permissions that will be granted to compute manager role"
   type        = list(string)
   default     = []
+}
+
+variable "authentication_method" {
+  description = "Authentication method for CAST AI. Use 'service_account_key' for a service account with a JSON private key, or 'impersonation' for GKE service account impersonation"
+  type        = string
+  default     = "service_account_key"
+
+  validation {
+    condition     = contains(["service_account_key", "impersonation"], var.authentication_method)
+    error_message = "authentication_method must be either 'service_account_key' or 'impersonation'"
+  }
 }
