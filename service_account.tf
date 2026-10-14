@@ -22,7 +22,7 @@ resource "google_service_account" "castai_service_account" {
 }
 
 resource "google_service_account_key" "castai_key" {
-  count              = var.create_service_account ? 1 : 0
+  count              = var.create_service_account && var.authentication_method == "service_account_key" ? 1 : 0
   service_account_id = google_service_account.castai_service_account[0].name
   public_key_type    = "TYPE_X509_PEM_FILE"
 }

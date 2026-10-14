@@ -1,5 +1,5 @@
 output "private_key" {
-  value     = var.create_service_account ? base64decode(google_service_account_key.castai_key[0].private_key) : ""
+  value     = var.create_service_account && var.authentication_method == "service_account_key" ? base64decode(google_service_account_key.castai_key[0].private_key) : ""
   sensitive = true
 
   depends_on = [
@@ -16,7 +16,19 @@ output "service_account_id" {
 }
 
 output "service_account_email" {
-  value = var.create_service_account ? google_service_account.castai_service_account[0].email : ""
+  value = var.create_service_account ? google_service_account.castai_service_account[0].email : local.service_account_email
+}
+
+output "castai_impersonation_service_account_id" {
+  value = var.authentication_method == "impersonation" ? data.castai_impersonation_service_account.gke[0].id : ""
+}
+
+output "castai_impersonation_service_account_email" {
+  value = var.authentication_method == "impersonation" ? data.castai_impersonation_service_account.gke[0].email : ""
+}
+
+output "target_service_account_email" {
+  value = var.authentication_method == "impersonation" ? local.service_account_email : ""
 }
 
 output "default_compute_manager_permissions" {

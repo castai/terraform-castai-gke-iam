@@ -31,6 +31,31 @@ module "castai_gke_iam" {
 }
 ```
 
+## Impersonation
+
+Set `authentication_method = "impersonation"` to onboard via GKE service account impersonation instead of a service account JSON private key. The module then grants the CAST AI delegate service account `roles/iam.serviceAccountTokenCreator` on the created service account and exposes the values for the `castai_gke_cluster` `credentials` block:
+
+```hcl
+module "castai_gke_iam" {
+  source = "castai/gke-iam/castai"
+
+  project_id            = var.project_id
+  gke_cluster_name      = var.cluster_name
+  authentication_method = "impersonation"
+}
+
+resource "castai_gke_cluster" "castai_cluster" {
+  # ...
+
+  credentials {
+    target_service_account = module.castai_gke_iam.target_service_account_email
+    castai_service_account = module.castai_gke_iam.castai_impersonation_service_account_email
+  }
+}
+```
+
+**Note:** when `create_service_account = false`, the module assumes an existing service account named `castai-gke-tf-<sha1 of gke_cluster_name>@<project_id>.iam.gserviceaccount.com` and applies the `roles/iam.serviceAccountTokenCreator` binding to it. That service account is not managed by this module in that case.
+
 # Examples
 
 Usage examples are located in [terraform provider repo](https://github.com/castai/terraform-provider-castai/tree/master/examples/gke)
@@ -71,11 +96,14 @@ No modules.
 | [google_service_account.castai_service_account](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account) | resource |
 | [google_service_account_key.castai_key](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_key) | resource |
 | [castai_gke_user_policies.gke](https://registry.terraform.io/providers/castai/castai/latest/docs/data-sources/gke_user_policies) | data source |
+| [castai_impersonation_service_account.gke](https://registry.terraform.io/providers/castai/castai/latest/docs/data-sources/impersonation_service_account) | data source |
+| [google_service_account_iam_member.castai_token_creator](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_iam_member) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_authentication_method"></a> [authentication\_method](#input\_authentication\_method) | Authentication method for CAST AI. Use 'service\_account\_key' for a service account with a JSON private key, or 'impersonation' for GKE service account impersonation | `string` | `"service_account_key"` | no |
 | <a name="input_cloud_proxy_service_account_name"></a> [cloud\_proxy\_service\_account\_name](#input\_cloud\_proxy\_service\_account\_name) | Name of the cloud-proxy Kubernetes Service Account | `string` | `"castai-cloud-proxy"` | no |
 | <a name="input_cloud_proxy_service_account_namespace"></a> [cloud\_proxy\_service\_account\_namespace](#input\_cloud\_proxy\_service\_account\_namespace) | Namespace of the cloud-proxy Kubernetes Service Account | `string` | `"castai-agent"` | no |
 | <a name="input_compute_manager_project_ids"></a> [compute\_manager\_project\_ids](#input\_compute\_manager\_project\_ids) | Projects list for shared sole tenancy nodes | `list(string)` | `[]` | no |
@@ -91,6 +119,9 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_private_key"></a> [private\_key](#output\_private\_key) | n/a |
+| <a name="output_castai_impersonation_service_account_email"></a> [castai\_impersonation\_service\_account\_email](#output\_castai\_impersonation\_service\_account\_email) | n/a |
+| <a name="output_castai_impersonation_service_account_id"></a> [castai\_impersonation\_service\_account\_id](#output\_castai\_impersonation\_service\_account\_id) | n/a |
 | <a name="output_service_account_email"></a> [service\_account\_email](#output\_service\_account\_email) | n/a |
 | <a name="output_service_account_id"></a> [service\_account\_id](#output\_service\_account\_id) | n/a |
+| <a name="output_target_service_account_email"></a> [target\_service\_account\_email](#output\_target\_service\_account\_email) | n/a |
 <!-- END_TF_DOCS -->
