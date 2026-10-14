@@ -1,1 +1,3 @@
 terraform.d
+.kimchi
+.terraform*
