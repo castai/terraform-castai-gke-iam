@@ -31,6 +31,8 @@ module "castai_gke_iam" {
 }
 ```
 
+Using this module is not mandatory. It provides a default set of GCP IAM resources for CAST AI and can also be used as a base for custom configurations - e.g. when different naming, roles or permissions are required.
+
 ## Impersonation
 
 Set `authentication_method = "impersonation"` to onboard via GKE service account impersonation instead of a service account JSON private key. The module then grants the CAST AI delegate service account `roles/iam.serviceAccountTokenCreator` on the created service account and exposes the values for the `castai_gke_cluster` impersonation arguments:
@@ -60,15 +62,15 @@ To improve security, a future version of this module will change the default aut
 
 As this step would cause the existing service account key to be deleted, a failed apply could leave the cluster disconnected. To reduce this risk, a preparation step is added in version 0.6.x.
 
-The step pre-provisions the resources required for impersonation authentication while the module still defaults to `service_account_key`. On upgrade, one additional resource is created: the `roles/iam.serviceAccountTokenCreator` binding that lets the CAST AI service account impersonate the target service account (the `castai_impersonation_service_account` data source is read as well). They are not used for authentication while `authentication_method` is `service_account_key` - the module keeps authenticating with the existing service account key - but they allow a later switch to `impersonation` without creating anything at cutover time.
+The step pre-provisions the resources required for impersonation authentication while the module still defaults to `service_account_key`. On upgrade, one additional resource is created: the `roles/iam.serviceAccountTokenCreator` binding that lets the CAST AI service account impersonate the target service account (the `castai_impersonation_service_account` data source is read as well). They are not used for authentication while `authentication_method` is `service_account_key` - the cluster keeps onboarding with the existing service account key - but they allow a later switch to `impersonation` without creating anything at cutover time. The `target_service_account_email` and `castai_service_account_email` outputs are populated during preparation as well, so the cluster module can be switched to impersonation at any time.
 
 Pre-provisioning is controlled with the `authentication_method_migration` variable:
 * `prepare` (default): create the impersonation resources early. This requires a castai provider version with GKE impersonation support and permission to grant the service account token creator role on the target service account.
 * `none`: opt out - no additional resources are created and no additional permissions are required. Behavior remains exactly as-is.
 
-If `authentication_method` is already set to `impersonation`, this preparation step has no effect. Switching to this more secure mode is already available today by setting `authentication_method = "impersonation"`.
+If `authentication_method` is already set to `impersonation`, this preparation step has no effect. You may opt in to this more secure mode today - there is no need to wait for the default to change - by setting `authentication_method = "impersonation"` as shown in the example above.
 
-When switching, also update the cluster module (`castai/gke-cluster/castai`) to authenticate via impersonation: remove `gke_credentials` and pass the two module outputs instead, as shown in the example above.
+Switching can happen gradually or in a single apply. First, update the cluster module (`castai/gke-cluster/castai`) to authenticate via impersonation: remove `gke_credentials` and pass the two module outputs instead, as shown in the example above. Then set `authentication_method` to `impersonation` here - the module stops creating the service account key and produces only the resources required for impersonation. Until then, the module keeps managing the key; it is simply no longer used for onboarding.
 
 # Examples
 
@@ -135,12 +137,12 @@ No modules.
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_castai_service_account_email"></a> [castai\_service\_account\_email](#output\_castai\_service\_account\_email) | Email of the CAST AI organization service account that performs the impersonation. Empty unless authentication\_method is "impersonation". |
-| <a name="output_castai_service_account_id"></a> [castai\_service\_account\_id](#output\_castai\_service\_account\_id) | ID of the CAST AI organization service account that performs the impersonation, as returned by the castai\_impersonation\_service\_account data source. Empty unless authentication\_method is "impersonation". |
+| <a name="output_castai_service_account_email"></a> [castai\_service\_account\_email](#output\_castai\_service\_account\_email) | Email of the CAST AI organization service account that performs the impersonation. Empty unless impersonation resources are created: authentication\_method is "impersonation" or authentication\_method\_migration is "prepare". |
+| <a name="output_castai_service_account_id"></a> [castai\_service\_account\_id](#output\_castai\_service\_account\_id) | ID of the CAST AI organization service account that performs the impersonation, as returned by the castai\_impersonation\_service\_account data source. Empty unless impersonation resources are created: authentication\_method is "impersonation" or authentication\_method\_migration is "prepare". |
 | <a name="output_default_castai_role_permissions"></a> [default\_castai\_role\_permissions](#output\_default\_castai\_role\_permissions) | n/a |
 | <a name="output_default_compute_manager_permissions"></a> [default\_compute\_manager\_permissions](#output\_default\_compute\_manager\_permissions) | n/a |
 | <a name="output_private_key"></a> [private\_key](#output\_private\_key) | Private key of the created service account. Empty unless create\_service\_account is true and authentication\_method is "service\_account\_key". |
 | <a name="output_service_account_email"></a> [service\_account\_email](#output\_service\_account\_email) | Email of the service account CAST AI uses to access the cluster. In impersonation mode this is the account CAST AI impersonates. |
 | <a name="output_service_account_id"></a> [service\_account\_id](#output\_service\_account\_id) | Account ID of the service account CAST AI uses to access the cluster. Empty when create\_service\_account is false. |
-| <a name="output_target_service_account_email"></a> [target\_service\_account\_email](#output\_target\_service\_account\_email) | Email of the service account in the GCP project that CAST AI impersonates. Empty unless authentication\_method is "impersonation". |
+| <a name="output_target_service_account_email"></a> [target\_service\_account\_email](#output\_target\_service\_account\_email) | Email of the service account in the GCP project that CAST AI impersonates. Empty unless impersonation resources are created: authentication\_method is "impersonation" or authentication\_method\_migration is "prepare". |
 <!-- END_TF_DOCS -->

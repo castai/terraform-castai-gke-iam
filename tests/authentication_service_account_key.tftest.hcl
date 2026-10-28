@@ -98,6 +98,11 @@ run "verify_impersonation_resources_not_created" {
     condition     = length([for r in data.castai_impersonation_service_account.gke : r]) == 0
     error_message = "CAST AI impersonation service account should NOT be queried for service_account_key auth with migration none"
   }
+
+  assert {
+    condition     = output.target_service_account_email == "" && output.castai_service_account_email == ""
+    error_message = "Impersonation outputs should be empty for service_account_key auth with migration none"
+  }
 }
 
 run "verify_private_key_output" {

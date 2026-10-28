@@ -98,12 +98,17 @@ run "verify_defaults_pre_provision_impersonation" {
 
   assert {
     condition     = output.private_key != ""
-    error_message = "Module should still authenticate with the service account key under prepare"
+    error_message = "Module should still manage the service account key under prepare"
   }
 
   assert {
-    condition     = output.target_service_account_email == ""
-    error_message = "Impersonation outputs should stay empty while authenticating with the key"
+    condition     = output.target_service_account_email == "castai-gke-tf-${substr(sha1("test-cluster"), 0, 8)}@test-project.iam.gserviceaccount.com"
+    error_message = "target_service_account_email output should be populated during preparation"
+  }
+
+  assert {
+    condition     = output.castai_service_account_email == "castai-gke-impersonator@castai-organization.iam.gserviceaccount.com"
+    error_message = "castai_service_account_email output should be populated during preparation"
   }
 }
 
@@ -134,6 +139,11 @@ run "verify_none_opts_out_of_prep" {
   assert {
     condition     = length([for r in data.castai_impersonation_service_account.gke : r]) == 0
     error_message = "CAST AI impersonation service account should NOT be read with none"
+  }
+
+  assert {
+    condition     = output.target_service_account_email == "" && output.castai_service_account_email == ""
+    error_message = "Impersonation outputs should be empty with none"
   }
 }
 
@@ -191,6 +201,11 @@ run "apply_defaults_with_prep" {
   assert {
     condition     = length([for r in google_service_account_iam_member.castai_token_creator : r]) == 1
     error_message = "Token creator binding should exist after prep apply"
+  }
+
+  assert {
+    condition     = output.target_service_account_email != "" && output.castai_service_account_email != ""
+    error_message = "Impersonation outputs should be populated after prep apply"
   }
 }
 
