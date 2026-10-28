@@ -54,6 +54,22 @@ resource "castai_gke_cluster" "castai_cluster" {
 
 **Note:** when `create_service_account = false`, the module assumes an existing service account named `castai-gke-tf-<sha1 of gke_cluster_name>@<project_id>.iam.gserviceaccount.com` and applies the `roles/iam.serviceAccountTokenCreator` binding to it. That service account is not managed by this module in that case.
 
+## Impersonation preparation in 0.6.x
+
+To improve security, a future version of this module will change the default authentication method from `service_account_key` to `impersonation`.
+
+As this step would cause the existing service account key to be deleted, a failed apply could leave the cluster disconnected. To reduce this risk, a preparation step is added in version 0.6.x.
+
+The step pre-provisions the resources required for impersonation authentication while the module still defaults to `service_account_key`. On upgrade, one additional resource is created: the `roles/iam.serviceAccountTokenCreator` binding that lets the CAST AI service account impersonate the target service account (the `castai_impersonation_service_account` data source is read as well). They are not used for authentication while `authentication_method` is `service_account_key` - the module keeps authenticating with the existing service account key - but they allow a later switch to `impersonation` without creating anything at cutover time.
+
+Pre-provisioning is controlled with the `authentication_method_migration` variable:
+* `prepare` (default): create the impersonation resources early. This requires a castai provider version with GKE impersonation support and permission to grant the service account token creator role on the target service account.
+* `none`: opt out - no additional resources are created and no additional permissions are required. Behavior remains exactly as-is.
+
+If `authentication_method` is already set to `impersonation`, this preparation step has no effect. Switching to this more secure mode is already available today by setting `authentication_method = "impersonation"`.
+
+When switching, also update the cluster module (`castai/gke-cluster/castai`) to authenticate via impersonation: remove `gke_credentials` and pass the two module outputs instead, as shown in the example above.
+
 # Examples
 
 Usage examples are located in [terraform provider repo](https://github.com/castai/terraform-provider-castai/tree/master/examples/gke)
@@ -64,15 +80,15 @@ Usage examples are located in [terraform provider repo](https://github.com/casta
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
-| <a name="requirement_castai"></a> [castai](#requirement\_castai) | >= 5.1.0 |
+| <a name="requirement_castai"></a> [castai](#requirement\_castai) | >= 9.14.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | >= 2.49 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_castai"></a> [castai](#provider\_castai) | 9.8.0 |
-| <a name="provider_google"></a> [google](#provider\_google) | 8.6.0 |
+| <a name="provider_castai"></a> [castai](#provider\_castai) | >= 9.14.0 |
+| <a name="provider_google"></a> [google](#provider\_google) | >= 2.49 |
 
 ## Modules
 
@@ -102,6 +118,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_authentication_method"></a> [authentication\_method](#input\_authentication\_method) | Authentication method for CAST AI. Use 'service\_account\_key' for a service account with a JSON private key, or 'impersonation' for GKE service account impersonation | `string` | `"service_account_key"` | no |
+| <a name="input_authentication_method_migration"></a> [authentication\_method\_migration](#input\_authentication\_method\_migration) | Controls migration to impersonation authentication as more secure default. 'prepare' pre-provisions the impersonation resources - but they remain unused until the authentication method is switched. 'none' disables any migration behavior. This variable is used for incremental migration and will be removed in the future. | `string` | `"prepare"` | no |
 | <a name="input_castai_role_permissions"></a> [castai\_role\_permissions](#input\_castai\_role\_permissions) | A set of permissions that will be granted to CAST AI role used by central system | `list(string)` | `[]` | no |
 | <a name="input_cloud_proxy_service_account_name"></a> [cloud\_proxy\_service\_account\_name](#input\_cloud\_proxy\_service\_account\_name) | Name of the cloud-proxy Kubernetes Service Account | `string` | `"castai-cloud-proxy"` | no |
 | <a name="input_cloud_proxy_service_account_namespace"></a> [cloud\_proxy\_service\_account\_namespace](#input\_cloud\_proxy\_service\_account\_namespace) | Namespace of the cloud-proxy Kubernetes Service Account | `string` | `"castai-agent"` | no |

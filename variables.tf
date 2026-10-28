@@ -72,3 +72,14 @@ variable "authentication_method" {
     error_message = "authentication_method must be either 'service_account_key' or 'impersonation'"
   }
 }
+
+variable "authentication_method_migration" {
+  description = "Controls migration to impersonation authentication as more secure default. 'prepare' pre-provisions the impersonation resources - but they remain unused until the authentication method is switched. 'none' disables any migration behavior. This variable is used for incremental migration and will be removed in the future."
+  type        = string
+  default     = "prepare"
+
+  validation {
+    condition     = contains(["prepare", "none"], var.authentication_method_migration)
+    error_message = "authentication_method_migration must be either 'prepare' or 'none'"
+  }
+}
