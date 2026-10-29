@@ -1,0 +1,34 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  tofu_test:
+    strategy:
+      matrix:
+        version: ["1.10", latest]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ matrix.version }}
+
+      - name: Print tofu version
+        run: tofu version
+
+      - name: OpenTofu init
+        run: tofu init || tofu init -upgrade
+
+      - name: Run OpenTofu tests
+        run: tofu test -verbose

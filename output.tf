@@ -1,6 +1,7 @@
 output "private_key" {
-  value     = var.create_service_account ? base64decode(google_service_account_key.castai_key[0].private_key) : ""
-  sensitive = true
+  description = "Private key of the created service account. Empty unless create_service_account is true and authentication_method is \"service_account_key\"."
+  value       = var.create_service_account && var.authentication_method == "service_account_key" ? base64decode(google_service_account_key.castai_key[0].private_key) : ""
+  sensitive   = true
 
   depends_on = [
     # Wait for binding and custom role creation
@@ -12,11 +13,40 @@ output "private_key" {
 }
 
 output "service_account_id" {
-  value = var.create_service_account ? google_service_account.castai_service_account[0].account_id : ""
+  description = "Account ID of the service account CAST AI uses to access the cluster. Empty when create_service_account is false."
+  value       = var.create_service_account ? google_service_account.castai_service_account[0].account_id : ""
 }
 
 output "service_account_email" {
-  value = var.create_service_account ? google_service_account.castai_service_account[0].email : ""
+  description = "Email of the service account CAST AI uses to access the cluster. In impersonation mode this is the account CAST AI impersonates."
+  value       = var.create_service_account ? google_service_account.castai_service_account[0].email : local.service_account_email
+}
+
+output "castai_service_account_id" {
+  description = "ID of the CAST AI organization service account that performs the impersonation, as returned by the castai_impersonation_service_account data source. Empty unless impersonation resources are created: authentication_method is \"impersonation\" or authentication_method_migration is \"prepare\"."
+  value       = local.create_impersonation_resources ? data.castai_impersonation_service_account.gke[0].id : ""
+}
+
+output "castai_service_account_email" {
+  description = "Email of the CAST AI organization service account that performs the impersonation. Empty unless impersonation resources are created: authentication_method is \"impersonation\" or authentication_method_migration is \"prepare\"."
+  value       = local.create_impersonation_resources ? data.castai_impersonation_service_account.gke[0].email : ""
+
+  depends_on = [
+    # Wait for the token creator binding so CAST AI can impersonate
+    # as soon as this output is used to onboard the cluster
+    google_service_account_iam_member.castai_token_creator
+  ]
+}
+
+output "target_service_account_email" {
+  description = "Email of the service account in the GCP project that CAST AI impersonates. Empty unless impersonation resources are created: authentication_method is \"impersonation\" or authentication_method_migration is \"prepare\"."
+  value       = local.create_impersonation_resources ? local.service_account_email : ""
+
+  depends_on = [
+    # Wait for the token creator binding so CAST AI can impersonate
+    # as soon as this output is used to onboard the cluster
+    google_service_account_iam_member.castai_token_creator
+  ]
 }
 
 output "default_compute_manager_permissions" {
