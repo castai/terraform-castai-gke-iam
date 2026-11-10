@@ -22,8 +22,14 @@ variable "compute_manager_project_ids" {
 
 variable "create_service_account" {
   type        = bool
-  description = "Whether a Service Account with private key should be created. When false, an existing service account named castai-gke-tf-<sha1 of gke_cluster_name>@<project_id>.iam.gserviceaccount.com is expected, and IAM bindings (including the impersonation token creator role) are applied to it"
+  description = "Whether a Service Account should be created for CAST AI to access the cluster. A private key is created only when authentication_method is 'service_account_key'. When false, an existing service account is expected (castai-gke-tf-<sha1 of gke_cluster_name>@<project_id>.iam.gserviceaccount.com by default, or the one given by service_account_id), and IAM bindings (including the impersonation token creator role) are applied to it"
   default     = true
+}
+
+variable "service_account_id" {
+  type        = string
+  description = "ID (email local part) of the GCP service account used by CAST AI to access the cluster. Used as the account_id when creating the service account, and as the assumed existing service account when create_service_account is false. Defaults to castai-gke-tf-<sha1 of gke_cluster_name>"
+  default     = ""
 }
 
 variable "setup_cloud_proxy_workload_identity" {
