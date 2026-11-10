@@ -33,6 +33,23 @@ module "castai_gke_iam" {
 
 Using this module is not mandatory. It provides a default set of GCP IAM resources for CAST AI and can also be used as a base for custom configurations - e.g. when different naming, roles or permissions are required.
 
+Custom service account name
+------------
+
+By default the module creates (or, when `create_service_account = false`, expects) a service account named `castai-gke-tf-<sha1 of gke_cluster_name>` in the target project. Set `service_account_id` to use a different name - both when the module creates the service account and when it only manages IAM bindings for an existing one:
+
+```hcl
+module "castai_gke_iam" {
+  source = "castai/gke-iam/castai"
+
+  project_id         = var.project_id
+  gke_cluster_name   = var.cluster_name
+  service_account_id = "my-castai-sa"
+}
+```
+
+Note that GCP service account IDs are immutable and unique per project: changing `service_account_id` after creation forces the service account to be replaced, and two clusters in the same project must not share one. Use the module outputs (`service_account_email`, `target_service_account_email`) to reference the account instead of hardcoding its name.
+
 Impersonation preparation in 0.6.x
 ----------------------------------
 
@@ -58,7 +75,7 @@ Usage examples are located in [terraform provider repo](https://github.com/casta
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
 | <a name="requirement_castai"></a> [castai](#requirement\_castai) | >= 9.14.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | >= 2.49 |
@@ -66,7 +83,7 @@ Usage examples are located in [terraform provider repo](https://github.com/casta
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_castai"></a> [castai](#provider\_castai) | >= 9.14.0 |
 | <a name="provider_google"></a> [google](#provider\_google) | >= 2.49 |
 
@@ -77,7 +94,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [google_project_iam_binding.compute_manager_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_binding) | resource |
 | [google_project_iam_custom_role.castai_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
 | [google_project_iam_custom_role.compute_manager_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
@@ -96,7 +113,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_authentication_method"></a> [authentication\_method](#input\_authentication\_method) | Authentication method for CAST AI. Use 'service\_account\_key' for a service account with a JSON private key, or 'impersonation' for GKE service account impersonation | `string` | `"service_account_key"` | no |
 | <a name="input_authentication_method_migration"></a> [authentication\_method\_migration](#input\_authentication\_method\_migration) | Controls migration to impersonation authentication as more secure default. 'prepare' pre-provisions the impersonation resources - but they remain unused until the authentication method is switched. 'none' disables any migration behavior. This variable is used for incremental migration and will be removed in the future. | `string` | `"prepare"` | no |
 | <a name="input_castai_role_permissions"></a> [castai\_role\_permissions](#input\_castai\_role\_permissions) | A set of permissions that will be granted to CAST AI role used by central system | `list(string)` | `[]` | no |
@@ -104,9 +121,10 @@ No modules.
 | <a name="input_cloud_proxy_service_account_namespace"></a> [cloud\_proxy\_service\_account\_namespace](#input\_cloud\_proxy\_service\_account\_namespace) | Namespace of the cloud-proxy Kubernetes Service Account | `string` | `"castai-agent"` | no |
 | <a name="input_compute_manager_permissions"></a> [compute\_manager\_permissions](#input\_compute\_manager\_permissions) | A set of permissions that will be granted to compute manager role | `list(string)` | `[]` | no |
 | <a name="input_compute_manager_project_ids"></a> [compute\_manager\_project\_ids](#input\_compute\_manager\_project\_ids) | Projects list for shared sole tenancy nodes | `list(string)` | `[]` | no |
-| <a name="input_create_service_account"></a> [create\_service\_account](#input\_create\_service\_account) | Whether a Service Account with private key should be created. When false, an existing service account named castai-gke-tf-<sha1 of gke\_cluster\_name>@<project\_id>.iam.gserviceaccount.com is expected, and IAM bindings (including the impersonation token creator role) are applied to it | `bool` | `true` | no |
+| <a name="input_create_service_account"></a> [create\_service\_account](#input\_create\_service\_account) | Whether a Service Account should be created for CAST AI to access the cluster. A private key is created only when authentication\_method is 'service\_account\_key'. When false, an existing service account is expected (castai-gke-tf-<sha1 of gke\_cluster\_name>@<project\_id>.iam.gserviceaccount.com by default, or the one given by service\_account\_id), and IAM bindings (including the impersonation token creator role) are applied to it | `bool` | `true` | no |
 | <a name="input_gke_cluster_name"></a> [gke\_cluster\_name](#input\_gke\_cluster\_name) | GKE cluster name for which to create IAM roles | `string` | n/a | yes |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The project id from GCP | `string` | n/a | yes |
+| <a name="input_service_account_id"></a> [service\_account\_id](#input\_service\_account\_id) | ID (email local part) of the GCP service account used by CAST AI to access the cluster. Used as the account\_id when creating the service account, and as the assumed existing service account when create\_service\_account is false. Defaults to castai-gke-tf-<sha1 of gke\_cluster\_name> | `string` | `""` | no |
 | <a name="input_service_accounts_unique_ids"></a> [service\_accounts\_unique\_ids](#input\_service\_accounts\_unique\_ids) | Service Accounts' unique IDs used by node pools in the cluster | `list(string)` | `[]` | no |
 | <a name="input_setup_cloud_proxy_workload_identity"></a> [setup\_cloud\_proxy\_workload\_identity](#input\_setup\_cloud\_proxy\_workload\_identity) | Whether the workload identity for castai-cloud-proxy should be setup | `bool` | `false` | no |
 | <a name="input_workload_identity_namespace"></a> [workload\_identity\_namespace](#input\_workload\_identity\_namespace) | Override workload identity namespace, default is <project-id>.svc.id.goog | `string` | `""` | no |
@@ -114,7 +132,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_castai_service_account_email"></a> [castai\_service\_account\_email](#output\_castai\_service\_account\_email) | Email of the CAST AI organization service account that performs the impersonation. Empty unless impersonation resources are created: authentication\_method is "impersonation" or authentication\_method\_migration is "prepare". |
 | <a name="output_castai_service_account_id"></a> [castai\_service\_account\_id](#output\_castai\_service\_account\_id) | ID of the CAST AI organization service account that performs the impersonation, as returned by the castai\_impersonation\_service\_account data source. Empty unless impersonation resources are created: authentication\_method is "impersonation" or authentication\_method\_migration is "prepare". |
 | <a name="output_default_castai_role_permissions"></a> [default\_castai\_role\_permissions](#output\_default\_castai\_role\_permissions) | n/a |
