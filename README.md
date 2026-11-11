@@ -53,6 +53,8 @@ Note that GCP service account IDs are immutable and unique per project: changing
 Impersonation preparation in 0.6.x
 ----------------------------------
 
+> Note: For general information on GKE Impersonation and a step-by-step guide for migrating to it, please refer to https://github.com/castai/terraform-provider-castai/blob/master/docs/impersonation/gke-impersonation.md
+
 To improve security, a future version of this module will change the default authentication method from `service_account_key` to `impersonation`.
 
 As this step would cause the existing service account key to be deleted, a failed apply could leave the cluster disconnected. To reduce this risk, a preparation step is added in version 0.6.x.
